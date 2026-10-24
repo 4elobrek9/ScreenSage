@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check .
+      - run: mypy
+      - run: pytest
+
+  package:
+    if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: screensage-windows
+            icon: src/screensage/assets/screensage.ico
+          - os: ubuntu-latest
+            artifact: screensage-linux
+            icon: src/screensage/assets/screensage.png
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e . pyinstaller
+      - run: pyinstaller --onefile --windowed --name ScreenSage --icon ${{ matrix.icon }} --collect-all screensage src/screensage/__main__.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/

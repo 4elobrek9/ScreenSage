@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screensage"
+version = "0.1.0"
+description = "A cross-platform assistant for understanding screen content."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "ScreenSage contributors" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: X11 Applications :: Qt",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Graphics :: Capture",
+]
+dependencies = [
+    "edge-tts>=6.1",
+    "httpx>=0.27",
+    "keyring>=25.2",
+    "loguru>=0.7",
+    "mss>=9.0",
+    "Pillow>=10.4",
+    "piper-tts>=1.2",
+    "pygame>=2.5",
+    "pydantic-settings[toml]>=2.4",
+    "PySide6>=6.7",
+    "pynput>=1.7",
+    "qasync>=0.27",
+    "tomli-w>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.11",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-mock>=3.14",
+    "respx>=0.21",
+    "ruff>=0.6",
+]
+build = ["pyinstaller>=6.10"]
+
+[project.scripts]
+screensage = "screensage.__main__:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+screensage = ["assets/*.ico", "assets/*.png", "assets/*.svg"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = [
+    "src/screensage/providers",
+    "src/screensage/tts",
+    "src/screensage/capture.py",
+    "src/screensage/config.py",
+    "src/screensage/orchestrator.py",
+    "src/screensage/platform_utils.py",
+]
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["screensage.ui.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra"
