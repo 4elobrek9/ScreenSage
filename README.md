@@ -1,96 +1,159 @@
 # ScreenSage
 
-ScreenSage is a Windows and Linux/X11 system-tray assistant for understanding a
-selected screen region. Press **Ctrl+Win+A** (Windows) or **Ctrl+Super+A**
-(Linux/X11), drag a region, and continue asking questions in the small chat.
+**Выдели область экрана → спроси → получи ответ голосом.**
 
-## Requirements and installation
+ScreenSage — лёгкий system-tray помощник для Windows и Linux (X11).  
+Нажал хоткей → выделил кусок экрана → задал вопрос в чате → получил короткий ответ (и голосом тоже).
 
-- Python 3.11+, a desktop session, and an audio output device for speech.
-- Linux needs X11 (Wayland global shortcuts/capture are not supported yet).
-- Windows: double-click `run_screensage.bat`; it creates `.venv`, installs the
-  package, and starts it. Or install manually:
+По умолчанию работает **полностью локально** через Ollama.
 
-  ```powershell
-  py -3.11 -m venv .venv
-  .venv\Scripts\Activate.ps1
-  python -m pip install -e .
-  python -m screensage
-  ```
+---
 
-- Linux: `python3 -m venv .venv && . .venv/bin/activate`, then
-  `pip install -e .` and `python -m screensage`. Install system audio/X11
-  development libraries as needed by PySide6, pygame, and pynput.
-- Development: `pip install -e ".[dev]"`, then `pytest`, `ruff check .`,
-  `mypy`.
+## Быстрый старт
 
-The default provider is **Ollama** at `http://localhost:11434`, with the newer,
-compact vision model `qwen3.5:2b` preferred. Open Settings, enter a model name,
-and click **Download model** to install it from Ollama without blocking the UI.
-The download requires the Ollama service and internet access. At startup,
-ScreenSage checks the models installed in Ollama and selects it when present;
-otherwise it picks another supported vision model (`qwen2.5vl`, `llava`,
-`moondream`, `bakllava`, `minicpm-v`, `qwen2-vl`, `qwen3-vl`,
-`llama3.2-vision`, or `gemma3`). It does not silently switch to an online
-provider. If no local vision model is found, install Ollama, start it, then run
-`ollama pull qwen3.5:2b`; ScreenSage will show a tray notification with the
-status. The Ollama library currently lists the model at about 3.1 GB on disk;
-actual VRAM use is higher and depends on image size, context, and quantization.
-Gemini and OpenRouter need API keys configured in Settings; keys are stored in
-the operating-system keyring, never in `config.toml`. Selecting either online
-provider sends the selected screenshot and follow-up context to that service.
-Review each provider's privacy and pricing terms before use.
+### Windows
 
-Answers are prompted to be one short phrase of at most 15 words, unless you ask
-for more detail. The chat's **Pause speech** button pauses/resumes voice output.
+1. Скачай репозиторий
+2. Дважды кликни `run_screensage.bat`
+3. Готово (создаст `.venv`, поставит зависимости и запустит)
 
-Speech uses Piper with a local model when configured; if Piper or its model is
-unavailable, ScreenSage falls back to Edge TTS and warns that answer text is
-sent to Microsoft's service. Audio playback uses pygame. Speech can be disabled in Settings. For Piper, install a compatible `.onnx`
-voice model and enter its file path in Settings. The standalone PyInstaller
-build also needs the Piper executable installed separately; Edge TTS can also
-be selected explicitly.
+**Или вручную:**
 
-## Use
+```powershell
+py -3.11 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -e .
+python -m screensage
+```
 
-On startup, ScreenSage shows a notification explaining whether the global
-shortcut is ready and which local model it selected. It then stays in the
-system tray; if the tray icon is hidden, check the Windows notification-area
-overflow (the `^` icon). Press **Ctrl+Win+A**, drag over the screen area, and
-release the mouse button to open the chat. **Escape** cancels, and **Enter**
-confirms the current selection. After capture, type a question in the chat and
-press Enter or **Send**; the app does not start by analyzing the image without
-your question. Use **Search image** to copy the exact selection and open Google
-Lens, then press Ctrl+V in the browser. Alternatively, right-click the
-ScreenSage tray icon and choose **Выделить область экрана**. If the shortcut
-still does not respond, use this menu item and check `screensage.log` from
-**Open logs folder**. The detailed log records keyboard-hook events and errors
-but does not record screenshots, questions, model responses, or API keys.
+### Linux (X11)
 
-The tray menu opens Settings, switches providers, or exits. Settings include
-provider/model, speech engine/voice/speed/language, displayed shortcut, speech
-toggle, and start-minimized toggle. Drag and release captures immediately;
-Escape cancels and Enter confirms the selection. Every submitted question is
-sent with the selected image and prior chat context.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+python -m screensage
+```
 
-ScreenSage uses the supplied gradient eye icon in the tray, window, and
-Windows executable/taskbar. Configuration is stored at
-`%APPDATA%\\ScreenSage\\config.toml` on Windows and
-`~/.config/screensage/config.toml` on Linux. Rotating logs are kept under the
-platform's user state directory: `%LOCALAPPDATA%\\ScreenSage\\logs` on Windows
-and `~/.local/state/screensage/logs` on Linux. Unsupported desktop facilities
-are reported in the UI/log rather than preventing import of the rest of the app.
+> Требуется **Python 3.11+**
 
-## Limitations and roadmap
+---
 
-This MVP supports screen capture and global shortcuts on Windows and X11 only.
-Wayland portals, voice input, OCR-specific workflows, and plugin support are
-not implemented. Provider output quality and supported image formats depend on
-the selected vision model. Global shortcut availability may be affected by
-other applications or desktop permissions. Online providers receive captured
-screen content; Piper is local, while edge-tts is online.
+## Как пользоваться
 
-## Contributing and license
+1. Запусти ScreenSage — он сядет в системный трей
+2. Нажми **`Ctrl + Win + A`** (Windows) или **`Ctrl + Super + A`** (Linux)
+3. Выдели область мышью
+4. В появившемся чате напиши вопрос и нажми Enter
+5. Получи короткий ответ + озвучку
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). ScreenSage is MIT-licensed; see
-[LICENSE](LICENSE).
+**Дополнительно:**
+
+- Правый клик по иконке в трее → **Выделить область экрана**
+- Кнопка **Search image** — копирует выделенное и открывает Google Lens
+- **Pause speech** — поставить озвучку на паузу
+- **Escape** — отменить выделение
+- **Enter** — подтвердить выделение
+
+---
+
+## Модели и провайдеры
+
+### Локально (Ollama) — рекомендуется
+
+По умолчанию используется Ollama на `http://localhost:11434`.
+
+Рекомендуемая модель: **`qwen3.5:2b`** (~3.1 ГБ)
+
+Если модели нет:
+
+```bash
+ollama pull qwen3.5:2b
+```
+
+Также поддерживаются:
+
+- `qwen2.5vl`
+- `llava`
+- `moondream`
+- `bakllava`
+- `minicpm-v`
+- `qwen2-vl`
+- `qwen3-vl`
+- `llama3.2-vision`
+- `gemma3`
+
+ScreenSage сам выберет подходящую vision-модель из установленных. На онлайн-провайдер он **не переключается** молча.
+
+### Онлайн-провайдеры
+
+Нужен API-ключ (настраивается в Settings):
+
+- **Google Gemini**
+- **OpenRouter**
+
+Ключи хранятся в системном keyring, **никогда** не пишутся в `config.toml`.
+
+> При использовании онлайн-провайдеров скриншот и контекст отправляются на их серверы. Проверяй политику конфиденциальности.
+
+---
+
+## Озвучка
+
+- **Piper** (локально) — рекомендуется
+- **Edge TTS** (онлайн) — используется как фолбэк
+
+Можно полностью отключить речь в настройках.
+
+Для Piper нужно указать путь к `.onnx` модели голоса в Settings.
+
+---
+
+## Настройки
+
+Правый клик по иконке в трее → **Settings**:
+
+- Выбор провайдера и модели
+- Голос, скорость, язык
+- Включение / выключение речи
+- Старт свёрнутым
+
+### Где хранятся данные
+
+| Что            | Windows                              | Linux                              |
+|----------------|--------------------------------------|------------------------------------|
+| Конфиг         | `%APPDATA%\ScreenSage\config.toml`   | `~/.config/screensage/config.toml` |
+| Логи           | `%LOCALAPPDATA%\ScreenSage\logs`     | `~/.local/state/screensage/logs`   |
+
+Логи **не** содержат скриншоты, вопросы, ответы моделей и API-ключи.
+
+---
+
+## Ограничения (MVP)
+
+- Только **Windows** и **Linux/X11** (Wayland пока не поддерживается)
+- Нет голосового ввода
+- Нет OCR-воркфлоу
+- Нет плагинов
+- Качество ответов зависит от выбранной vision-модели
+- Глобальный хоткей может конфликтовать с другими программами
+
+---
+
+## Разработка
+
+```bash
+pip install -e ".[dev]"
+ruff check .
+mypy
+pytest
+```
+
+Подробнее — в [CONTRIBUTING.md](CONTRIBUTING.md) и папке `docs/`.
+
+---
+
+## Лицензия
+
+MIT
+```
